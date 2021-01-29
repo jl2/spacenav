@@ -1,0 +1,47 @@
+* About spacenav
+  This is a Common Lisp binding to libspnav and for using 3D mice compatible with [[http://spacenav.sourceforge.net/][spacenav]].
+
+* Requirements
+  This package requires libspnav to be in the library path.  On Debian it can be installed with:
+  #+begin_src shell
+  sudo apt-get install libspnav
+  #+end_src
+
+* Using
+
+** Debugging
+   This snippet shows how to view 3D mouse events for debugging:
+
+#+name: event-debug
+#+begin_src lisp
+  (ql:quickload :spacenav)
+  (spacenav:debug-events)
+#+end_src
+
+
+** Event loop
+   This example shows a simple event loop:
+
+#+name: simple-event-loop
+#+begin_src lisp
+  (ql:quickload :spacenav)
+  (defun mouse-event-loop ()
+    "Loop until button one is released."
+    (unwind-protect
+         (let ((res (spacenav:sn-open)))
+           (when res
+             (loop
+               for event = (spacenav:wait-event)
+               do (print event)
+               while (and event
+                          (not (button-release-p event 1)))
+               do
+                  (handle-mouse-event event))))
+      (spacenav:sn-close)))
+#+end_src
+
+
+* License
+  ISC
+
+  Copyright (c) 2021 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
