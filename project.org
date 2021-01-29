@@ -4,7 +4,7 @@
 * Requirements
   This package requires libspnav to be in the library path.  On Debian it can be installed with:
   #+begin_src shell
-  sudo apt-get install libspnav
+  sudo apt-get install libspnav0
   #+end_src
 
 * Using
