@@ -26,9 +26,9 @@
 
 (declaim (optimize (speed 3) (space 3)))
 (declaim (inline button-press-p button-release-p decode event poll-event wait-event))
-(declaim (inline sp-open sp-close fd sensitivity spnav-poll-event spnav-wait-event))
+(declaim (inline sn-open sn-close fd sensitivity spnav-poll-event spnav-wait-event))
 
-(cffi:defcstruct sp-motion-event
+(cffi:defcstruct sn-motion-event
   "Motion event from libspnav.  x, y, z, rx, ry, and rz \
 range between -500 and 500.  Period is the duration since the previous event."
   (type :int)
@@ -41,7 +41,7 @@ range between -500 and 500.  Period is the duration since the previous event."
   (period :unsigned-int)
   (data :pointer))
 
-(cffi:defcstruct sp-button-event
+(cffi:defcstruct sn-button-event
   "Button event from libspnav.  press is 1 if the button was pressed, 0 if released \
 bnum is the button number."
   (type :int)
@@ -50,8 +50,8 @@ bnum is the button number."
 
 (cffi:defcunion spacenav-event
   (type :int)
-  (motion (:struct sp-motion-event))
-  (button (:struct sp-button-event)))
+  (motion (:struct sn-motion-event))
+  (button (:struct sn-button-event)))
 
 
 (cffi:defcfun ("spnav_open" sn-open) :int
@@ -79,13 +79,13 @@ bnum is the button number."
   (event (:pointer (:union spacenav-event))))
 
 (defclass motion-event ()
-  ((x :initarg :x :type fixnum)
-   (y :initarg :y :type fixnum)
-   (z :initarg :z :type fixnum)
-   (rx :initarg :rx :type fixnum)
-   (ry :initarg :ry :type fixnum)
-   (rz :initarg :rz :type fixnum)
-   (period :initarg :period :type fixnum))
+  ((x :initarg :x :type fixnum :initform 0)
+   (y :initarg :y :type fixnum :initform 0)
+   (z :initarg :z :type fixnum :initform 0)
+   (rx :initarg :rx :type fixnum :initform 0)
+   (ry :initarg :ry :type fixnum :initform 0)
+   (rz :initarg :rz :type fixnum :initform 0)
+   (period :initarg :period :type fixnum :initform 1))
   (:documentation "A 3D mouse motion event."))
 
 (defmethod print-object ((object motion-event) stream)
@@ -93,7 +93,7 @@ bnum is the button number."
   (declare (type stream stream))
   (with-slots (x y z rx ry rz period) object
     (format stream
-            "(:x ~a :y ~a :z ~a :rx ~a :ry ~a :rz ~a :period ~a )"
+            "(:x ~a :y ~a :z ~a :rx ~a :ry ~a :rz ~a :period ~a)"
             x y z rx ry rz period)))
 
 (defclass button-event ()
@@ -108,7 +108,6 @@ bnum is the button number."
     (format stream
             "(:press ~a :button ~a)"
             press button)))
-
 
 
 (defun button-press-p (event num)
@@ -133,11 +132,12 @@ bnum is the button number."
          (and (= button num)
               (= press 0)))))
 
+
 (defun decode-event (event)
   "Convert a low level event into an object."
   (let ((type (cffi:foreign-slot-value event '(:union spacenav-event) 'type)))
     (cond ((= type 1)
-           (cffi:with-foreign-slots ((x y z rx ry rz period) event (:struct motion-event))
+           (cffi:with-foreign-slots ((x y z rx ry rz period) event (:struct sn-motion-event))
              (make-instance 'motion-event
                             :x x
                             :y y
@@ -147,7 +147,7 @@ bnum is the button number."
                             :rz rz
                             :period period)))
           ((= type 2)
-           (cffi:with-foreign-slots ((press bnum) event (:struct button-event))
+           (cffi:with-foreign-slots ((press bnum) event (:struct sn-button-event))
              (make-instance 'button-event
                             :press press
                             :button bnum)))
@@ -181,5 +181,5 @@ bnum is the button number."
                         (not (button-release-p event 1)))
              do
                 (print event))))
-    (format  t "Closing ...~%")
+    (print "Closing ...")
     (sn-close)))

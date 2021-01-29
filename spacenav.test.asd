@@ -1,6 +1,7 @@
-;; package.lisp
+;; newgl.test.asd
 ;;
-;; Copyright (c) 2021 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
+;; Copyright (c) 2020 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
+
 
 ;; Permission to use, copy, modify, and/or distribute this software for any
 ;; purpose with or without fee is hereby granted, provided that the above
@@ -14,26 +15,22 @@
 ;; ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 ;; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-(defpackage #:spacenav
-  (:use #:cl)
-  (:nicknames #:sn)
-  (:export #:sn-open
-           #:sn-close
-           #:fd
-           #:remove-events
-           #:sensitivity
-           #:wait-event
-           #:poll-event
+(in-package :cl-user)
 
-           #:button
-           #:motion
-           #:any
+(defpackage :spacenav.test-asd
+  (:use :cl :asdf))
+(in-package :spacenav.test-asd)
 
-           #:button-event
-           #:motion-event
-
-           #:debug-events
-           #:print-object
-           #:button-press-p
-           #:button-release-p
-           ))
+(asdf:defsystem #:spacenav.test
+  :description "Test spacenav"
+  :author "Jeremiah LaRocco <jeremiah_larocco@fastmail.com>"
+  :license  "ISC"
+  :version "1.0.0"
+  :serial t
+  :depends-on ( :spacenav
+                :fiveam)
+  :components ((:module "t"
+                :components
+                        ((:file "package"))))
+  :perform (test-op :after (op c)
+                    (eval (read-from-string "(every #'fiveam::TEST-PASSED-P (5am:run :spacenav))"))))
