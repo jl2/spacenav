@@ -15,12 +15,11 @@
 ;; ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 ;; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-
 (asdf:defsystem #:spacenav
-  :description "Describe spacenav here"
-  :author "Your Name <your.name@example.com>"
-  :license  "Specify license here"
-  :version "0.0.1"
+  :description "Common Lisp binding to libspnav."
+  :author "Jeremiah LaRocco <jeremiah_larocco@fastmail.com>"
+  :license  "ISC"
+  :version "1.0.0"
   :serial t
   :depends-on (#:cffi)
   :components ((:file "package")
