@@ -36,4 +36,14 @@
            #:print-object
            #:button-press-p
            #:button-release-p
+
+           #:x
+           #:y
+           #:z
+           #:rx
+           #:ry
+           #:rz
+           #:period
+           #:button
+           #:press
            ))
