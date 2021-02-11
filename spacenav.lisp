@@ -78,24 +78,24 @@ bnum is the button number."
 (cffi:defcfun "spnav_poll_event" :int
   (event (:pointer (:union spacenav-event))))
 
-(defstruct motion-event
-  (x 0 :type fixnum)
-  (y 0 :type fixnum)
-  (z 0 :type fixnum)
-  (rx 0 :type fixnum)
-  (ry 0 :type fixnum)
-  (rz 0 :type fixnum)
-  (period 0 :type fixnum))
+;; (defstruct motion-event
+;;   (x 0 :type fixnum)
+;;   (y 0 :type fixnum)
+;;   (z 0 :type fixnum)
+;;   (rx 0 :type fixnum)
+;;   (ry 0 :type fixnum)
+;;   (rz 0 :type fixnum)
+;;   (period 0 :type fixnum))
 
-;; (defclass motion-event ()
-;;   ((x :initarg :x :type fixnum :initform 0)
-;;    (y :initarg :y :type fixnum :initform 0)
-;;    (z :initarg :z :type fixnum :initform 0)
-;;    (rx :initarg :rx :type fixnum :initform 0)
-;;    (ry :initarg :ry :type fixnum :initform 0)
-;;    (rz :initarg :rz :type fixnum :initform 0)
-;;    (period :initarg :period :type fixnum :initform 1))
-;;   (:documentation "A 3D mouse motion event."))
+(defclass motion-event ()
+  ((x :initarg :x :type fixnum :initform 0)
+   (y :initarg :y :type fixnum :initform 0)
+   (z :initarg :z :type fixnum :initform 0)
+   (rx :initarg :rx :type fixnum :initform 0)
+   (ry :initarg :ry :type fixnum :initform 0)
+   (rz :initarg :rz :type fixnum :initform 0)
+   (period :initarg :period :type fixnum :initform 1))
+  (:documentation "A 3D mouse motion event."))
 
 (defmethod print-object ((object motion-event) stream)
   "Print a motion-event."
@@ -105,14 +105,18 @@ bnum is the button number."
             "(:x ~a :y ~a :z ~a :rx ~a :ry ~a :rz ~a :period ~a)"
             x y z rx ry rz period)))
 
-(defstruct button-event
-  (press 0 :type fixnum)
-  (button 0 :type fixnum))
+;; (defstruct button-event
+;;   (press 0 :type fixnum)
+;;   (button 0 :type fixnum))
 
-;; (defclass button-event ()
-;;   ((press :initarg :press)
-;;    (button :initarg :button))
-;;   (:documentation "A 3D mouse button event."))
+;; (defstruct spacenav-event
+;;   (motion nil :type (or null motion-event))
+;;   (button nil :type (or null button-event)))
+
+(defclass button-event ()
+  ((press :initarg :press)
+   (button :initarg :button))
+  (:documentation "A 3D mouse button event."))
 
 (defmethod print-object ((object button-event) stream)
   "Print a button-event."
@@ -122,32 +126,53 @@ bnum is the button number."
             "(:press ~a :button ~a)"
             press button)))
 
-(defgeneric button-press-p (event num)
-  (:documentation "Return t if an event is a button press for button num."))
-
-(defmethod button-press-p ((event t) num)
-  (declare (ignore num))
-  nil)
-
-(defmethod button-press-p ((event button-event) (num integer))
+(defun button-press-p (event num)
+  "Return t if an event is a button press for button num."
+  (declare (type fixnum num)
+           (type (or null motion-event button-event) event))
   (and event
+       (eq 'button-event (type-of event))
        (with-slots (press button) event
+         (declare (type fixnum button press))
          (and (= button num)
               (= press 1)))))
 
-(defgeneric button-release-p (event num)
-  (:documentation "Return t if an event is a button press for button num."))
-
-(defmethod button-release-p ((event t) num)
-  (declare (ignore num))
-  nil)
-
-(defmethod button-release-p ((event button-event) (num integer))
+(defun button-release-p (event num)
   "Return t if event is a button release for button num."
+  (declare (type fixnum num)
+           (type (or null motion-event button-event) event))
   (and event
+       (eq 'button-event (type-of event))
        (with-slots (press button) event
+         (declare (type fixnum button press))
          (and (= button num)
               (= press 0)))))
+;; (defgeneric button-press-p (event num)
+;;   (:documentation "Return t if an event is a button press for button num."))
+
+;; (defmethod button-press-p ((event t) num)
+;;   (declare (ignore num))
+;;   nil)
+
+;; (defmethod button-press-p ((event button-event) (num integer))
+;;   (and event
+;;        (with-slots (press button) event
+;;          (and (= button num)
+;;               (= press 1)))))
+
+;; (defgeneric button-release-p (event num)
+;;   (:documentation "Return t if an event is a button press for button num."))
+
+;; (defmethod button-release-p ((event t) num)
+;;   (declare (ignore num))
+;;   nil)
+
+;; (defmethod button-release-p ((event button-event) (num integer))
+;;   "Return t if event is a button release for button num."
+;;   (and event
+;;        (with-slots (press button) event
+;;          (and (= button num)
+;;               (= press 0)))))
 
 
 (defun decode-event (event)
@@ -179,6 +204,22 @@ bnum is the button number."
              (decode-event event))))))
 
 (defun wait-event ()
+  "Return an event, and wait for one if none are available.  Return nil on error."
+  (cffi:with-foreign-object (event '(:union spacenav-event))
+    (let ((res (spnav-wait-event event)))
+      (cond ((= res 0) nil)
+            (t
+             (decode-event event))))))
+
+(defun poll-event-into (event)
+  "Return an event immediately.  If none are queued then return nil."
+  (cffi:with-foreign-object (event '(:union spacenav-event))
+    (let ((res (spnav-poll-event event)))
+      (cond ((= res 0) nil)
+            (t
+             (decode-event event))))))
+
+(defun wait-event-into (event)
   "Return an event, and wait for one if none are available.  Return nil on error."
   (cffi:with-foreign-object (event '(:union spacenav-event))
     (let ((res (spnav-wait-event event)))
