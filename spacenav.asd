@@ -16,7 +16,7 @@
 ;; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 (asdf:defsystem #:spacenav
-  :description "Common Lisp binding to libspnav."
+  :description "Common Lisp binding to libspnav, http://spacenav.sourceforge.net/, an open source library for using 3D mice from 3DConnexion."
   :author "Jeremiah LaRocco <jeremiah_larocco@fastmail.com>"
   :license  "ISC"
   :version "1.0.0"

@@ -242,3 +242,5 @@ bnum is the button number."
                 (print event))))
     (print "Closing ...")
     (sn-close)))
+
+(push :spacenav *features*)
