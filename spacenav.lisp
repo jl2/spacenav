@@ -78,15 +78,6 @@ bnum is the button number."
 (cffi:defcfun "spnav_poll_event" :int
   (event (:pointer (:union spacenav-event))))
 
-;; (defstruct motion-event
-;;   (x 0 :type fixnum)
-;;   (y 0 :type fixnum)
-;;   (z 0 :type fixnum)
-;;   (rx 0 :type fixnum)
-;;   (ry 0 :type fixnum)
-;;   (rz 0 :type fixnum)
-;;   (period 0 :type fixnum))
-
 (defclass motion-event ()
   ((x :initarg :x :type fixnum :initform 0)
    (y :initarg :y :type fixnum :initform 0)
@@ -105,14 +96,6 @@ bnum is the button number."
             "(:x ~a :y ~a :z ~a :rx ~a :ry ~a :rz ~a :period ~a)"
             x y z rx ry rz period)))
 
-;; (defstruct button-event
-;;   (press 0 :type fixnum)
-;;   (button 0 :type fixnum))
-
-;; (defstruct spacenav-event
-;;   (motion nil :type (or null motion-event))
-;;   (button nil :type (or null button-event)))
-
 (defclass button-event ()
   ((press :initarg :press)
    (button :initarg :button))
@@ -125,28 +108,6 @@ bnum is the button number."
     (format stream
             "(:press ~a :button ~a)"
             press button)))
-
-;; (defun button-press-p (event num)
-;;   "Return t if an event is a button press for button num."
-;;   (declare (type fixnum num)
-;;            (type (or null motion-event button-event) event))
-;;   (and event
-;;        (eq 'button-event (type-of event))
-;;        (with-slots (press button) event
-;;          (declare (type fixnum button press))
-;;          (and (= button num)
-;;               (= press 1)))))
-
-;; (defun button-release-p (event num)
-;;   "Return t if event is a button release for button num."
-;;   (declare (type fixnum num)
-;;            (type (or null motion-event button-event) event))
-;;   (and event
-;;        (eq 'button-event (type-of event))
-;;        (with-slots (press button) event
-;;          (declare (type fixnum button press))
-;;          (and (= button num)
-;;               (= press 0)))))
 
 (defgeneric button-press-p (event num)
   (:documentation "Return t if an event is a button press for button num."))
@@ -211,22 +172,6 @@ bnum is the button number."
       (cond ((= res 0) nil)
             (t
              (decode-event event))))))
-
-;; (defun poll-event-into (event)
-;;   "Return an event immediately.  If none are queued then return nil."
-;;   (cffi:with-foreign-object (event '(:union spacenav-event))
-;;     (let ((res (spnav-poll-event event)))
-;;       (cond ((= res 0) nil)
-;;             (t
-;;              (decode-event event))))))
-
-;; (defun wait-event-into (event)
-;;   "Return an event, and wait for one if none are available.  Return nil on error."
-;;   (cffi:with-foreign-object (event '(:union spacenav-event))
-;;     (let ((res (spnav-wait-event event)))
-;;       (cond ((= res 0) nil)
-;;             (t
-;;              (decode-event event))))))
 
 (defun debug-events ()
   "Loop until button one is released."
