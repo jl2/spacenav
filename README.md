@@ -7,6 +7,6 @@ For more information, see [project.org](https://github.com/jl2/spacenav/blob/mas
 ## License
 ISC
 
-Copyright (c) 2021 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
+Copyright (c) 2023 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
 

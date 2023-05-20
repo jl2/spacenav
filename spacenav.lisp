@@ -1,6 +1,6 @@
 ;; spacenav.lisp
 ;;
-;; Copyright (c) 2021 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
+;; Copyright (c) 2023 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
 ;; Permission to use, copy, modify, and/or distribute this software for any
 ;; purpose with or without fee is hereby granted, provided that the above
@@ -24,7 +24,7 @@
 
 (cffi:defcenum event-type :any :motion :button)
 
-(declaim (optimize (speed 3) (space 3)))
+(declaim (optimize (speed 3) (space 0)))
 (declaim (inline button-press-p button-release-p decode event poll-event wait-event))
 (declaim (inline sn-open sn-close fd sensitivity spnav-poll-event spnav-wait-event))
 
@@ -97,8 +97,8 @@ bnum is the button number."
             x y z rx ry rz period)))
 
 (defclass button-event ()
-  ((press :initarg :press)
-   (button :initarg :button))
+  ((press :initarg :press :type fixnum)
+   (button :initarg :button :type fixnum))
   (:documentation "A 3D mouse button event."))
 
 (defmethod print-object ((object button-event) stream)
@@ -119,6 +119,7 @@ bnum is the button number."
 (defmethod button-press-p ((event button-event) (num integer))
   (and event
        (with-slots (press button) event
+         (declare (type fixnum press button))
          (and (= button num)
               (= press 1)))))
 
@@ -133,6 +134,7 @@ bnum is the button number."
   "Return t if event is a button release for button num."
   (and event
        (with-slots (press button) event
+         (declare (type fixnum press button))
          (and (= button num)
               (= press 0)))))
 
