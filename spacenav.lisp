@@ -24,7 +24,7 @@
 
 (cffi:defcenum event-type :any :motion :button)
 
-(declaim (optimize (speed 3) (space 0)))
+(declaim (optimize (speed 1) (space 3) (safety 1) (debug 1)))
 (declaim (inline button-press-p button-release-p decode event poll-event wait-event))
 (declaim (inline sn-open sn-close fd sensitivity spnav-poll-event spnav-wait-event))
 
@@ -77,6 +77,119 @@ bnum is the button number."
 
 (cffi:defcfun "spnav_poll_event" :int
   (event (:pointer (:union spacenav-event))))
+
+(cffi:defcfun ("spnav_protocol" protocol-version) :int
+  "Return protocol version number.")
+
+(cffi:defcfun ("spnav_client_name" set-client-name) :int
+  (name :string))
+
+
+(defun evmask (&optional (options '(:motion :button :dev :cfg :raw-axis :raw-button :input :default :all)))
+  (apply #'logior
+         (mapcar (lambda (opt)
+                   (alexandria:assoc-value `((:motion .    #16R01)
+                                             (:button .    #16R02)
+                                             (:dev    .    #16R04)
+                                             (:cfg    .    #16R08)
+                                             (:raw-axis .  #16R10)
+                                             (:raw-button . #16R20)
+                                             (:input   .   ,(logior #16R01 #16R02))
+                                             (:default .   ,(logior #16R01 #16R02 #16R04))
+                                             (:all    .    #16Rffff))
+                                           opt))
+                 options)))
+
+(cffi:defcfun ("spnav_evmask" set-evmask) :int
+  (mask :unsigned-int))
+
+(cffi:defcfun ("spnav_dev_name" dev-name) :int
+  (buf :string) (bufsz :int))
+
+(defun device-name ()
+  (let* ((size (dev-name (cffi:null-pointer) 0))
+         (dname (cffi:foreign-alloc :char :count (1+ size)))
+         (size2 (dev-name dname size)))
+    (when (not (= size size2))
+      (error "Inconsistent size: ~a ~a" size size2))
+    (let ((rval (cffi:foreign-string-to-lisp dname)))
+      (cffi:foreign-free dname)
+      (values rval size2))))
+
+(cffi:defcfun ("spnav_dev_path" dev-path) :int
+  (buf :string) (bufsz :int))
+
+(defun device-path ()
+  (let* ((size (dev-path (cffi:null-pointer) 0))
+         (dpath (cffi:foreign-alloc :char :count (1+ size)))
+         (size2 (dev-path dpath size)))
+    (when (not (= size size2))
+      (error "Inconsistent size: ~a ~a" size size2))
+    (let ((rval (cffi:foreign-string-to-lisp dpath)))
+      (cffi:foreign-free dpath)
+      (values rval size2))))
+
+(cffi:defcfun ("spnav_dev_buttons" device-buttons) :int)
+(cffi:defcfun ("spnav_dev_axes" device-axes) :int)
+(cffi:defcenum dev-type
+  :unknown 
+  ;; serial devices */
+  (:Spaceball-1003/2003/2003C #16R100)
+  :Spaceball-3003/3003C
+  :Spaceball-4000FLX/5000FLX
+  :Magellan-SpaceMouse
+  :Spaceball-5000-spacemouse-protocol
+  :3Dconnexion-CadMan-spacemouse-protocol
+  ;; USB devices */
+  (:SpaceMouse-Plus-XT #16R200)
+  :3Dconnexion-CadMan-USB-version
+   :SpaceMouse-Classic
+  :Spaceball-5000-USB-version
+  :Space-Traveller
+  :Space-Pilot
+  :Space-Navigator
+  :Space-Explorer
+  :Space-Navigator-for-Notebooks
+  :Space-Pilot-pro
+  :SpaceMouse-Pro
+  :NuLOOQ
+  :SpaceMouse-Wireless
+  :SpaceMouse-Pro-Wireless
+  :SpaceMouse-Enterprise
+  :SpaceMouse-Compact
+  :SpaceMouse-Module
+  )
+(cffi:defcfun ("spnav_dev_type" device-type) dev-type)
+
+(cffi:defcenum led-state
+  (:error -1)
+  :off
+  :on
+  :auto)
+(cffi:defcfun ("spnav_cfg_set_led" set-led) led-state
+  (state led-state))
+(cffi:defcfun ("spnav_cfg_get_led" get-led) led-state)
+
+(cffi:defcenum grab-state
+  (:error -1)
+  (:no-grab 0)
+  (:grab 1))
+(cffi:defcfun ("spnav_cfg_set_grab" set-grab) grab-state
+  (state grab-state))
+(cffi:defcfun ("spnav_cfg_get_grab" get-grab) grab-state)
+
+(cffi:defcfun ("spnav_dev_usbid" dev-usbid) :int
+  (vendor (:pointer :unsigned-int))
+  (prod (:pointer :unsigned-int)))
+
+(defun device-usbid ()
+  (cffi:with-foreign-objects ((vendor :unsigned-int 2)
+                              (prod :unsigned-int 2))
+    (dev-usbid vendor prod)
+    (format nil
+            "~4,'0x:~4,'0x"
+            (cffi:mem-aref vendor :unsigned-int)
+            (cffi:mem-aref prod :unsigned-int))))
 
 (defclass motion-event ()
   ((x :initarg :x :type fixnum :initform 0)

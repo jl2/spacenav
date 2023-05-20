@@ -20,6 +20,30 @@
   (:export #:sn-open
            #:sn-close
            #:fd
+
+           #:protocol-version
+
+           #:set-client-name
+
+           #:set-evmask
+           #:evmask
+
+           #:device-name
+           #:device-path
+           #:device-buttons
+           #:device-axes
+           #:device-usbid
+           #:device-type
+
+           #:set-led
+           #:get-led
+
+           #:set-grab
+           #:get-grab
+
+           #:set-serial
+           #:get-serial
+
            #:remove-events
            #:sensitivity
            #:wait-event

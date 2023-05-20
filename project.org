@@ -25,19 +25,24 @@
 #+name: simple-event-loop
 #+begin_src lisp
   (ql:quickload :spacenav)
-  (defun mouse-event-loop ()
+  (defun 3d-mouse-event-loop ()
     "Loop until button one is released."
     (unwind-protect
-         (let ((res (spacenav:sn-open)))
+         (let ((res (sn:sn-open)))
+           (format t "Device name: ~s~%" (sn:device-name))
+           (format t "Device type: ~a~%" (sn:device-type))
+           (format t "Device buttons: ~d~%" (sn:device-buttons))
+           (format t "Device axes: ~d~%" (sn:device-axes))
+           (format t "Device USBID: ~s~%" (sn:device-usbid))
+
            (when res
              (loop
-               for event = (spacenav:wait-event)
+               for event = (sn:wait-event)
                do (print event)
                while (and event
-                          (not (button-release-p event 1)))
-               do
-                  (handle-mouse-event event))))
-      (spacenav:sn-close)))
+                          (not (sn:button-release-p event 1))))))
+      (sn:sn-close)))
+  (3d-mouse-event-loop)
 #+end_src
 
 
