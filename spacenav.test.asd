@@ -1,6 +1,5 @@
 ;; spacenav.test.asd
-;;
-;; Copyright (c) 2023 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
+;; Copyright (c) 2024 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
 ;; Permission to use, copy, modify, and/or distribute this software for any
 ;; purpose with or without fee is hereby granted, provided that the above
@@ -18,6 +17,7 @@
 
 (defpackage :spacenav.test-asd
   (:use :cl :asdf))
+
 (in-package :spacenav.test-asd)
 
 (asdf:defsystem #:spacenav.test
@@ -26,10 +26,15 @@
   :license  "ISC"
   :version "1.0.0"
   :serial t
-  :depends-on ( :spacenav
-                :fiveam)
+  :depends-on (:spacenav
+               :fiveam)
+
   :components ((:module "t"
                 :components
-                        ((:file "package"))))
-  :perform (test-op :after (op c)
-                    (eval (read-from-string "(every #'fiveam::TEST-PASSED-P (5am:run :spacenav))"))))
+                ((:file "package"))))
+
+  :perform (test-op
+            :after (op c)
+            (eval (read-from-string
+                   "(every #'fiveam::TEST-PASSED-P
+                      (5am:run :spacenav))"))))

@@ -49,4 +49,4 @@
 * License
   ISC
 
-  Copyright (c) 2023 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
+  Copyright (c) 2024 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
