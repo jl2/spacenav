@@ -37,10 +37,10 @@
 
            (when res
              (loop
-               for event = (sn:wait-event)
-               do (print event)
-               while (and event
-                          (not (sn:button-release-p event 1))))))
+               :for event = (sn:wait-event)
+               :do (print event)
+               :while (and event
+                           (not (sn:button-release-p event :esc))))))
       (sn:sn-close)))
   (3d-mouse-event-loop)
 #+end_src
