@@ -225,9 +225,6 @@ bnum is the button number."
 (defgeneric button-press-p (event num)
   (:documentation "Return t if an event is a button press for button num."))
 
-(defmethod button-press-p ((event t) num)
-  (declare (ignore num))
-  nil)
 
 (defmethod button-press-p ((event button-event) (num integer))
   (and event
@@ -235,6 +232,33 @@ bnum is the button number."
          (declare (type fixnum press button))
          (and (= button num)
               (= press 1)))))
+
+(defmethod button-press-p ((event button-event) (bname symbol))
+  (and event
+       (with-slots (press button) event
+         (declare (type fixnum press button))
+         (let ((bnum (alexandria:assoc-value '((:left . 0)
+                                               (:right . 1)
+                                               (:menu . 0)
+                                               (:fit . 1)
+                                               (:alt . 23)
+                                               (:ctrl . 25)
+                                               (:shift . 24)
+                                               (:esc . 22)
+                                               (:one . 12)
+                                               (:two . 13)
+                                               (:three . 14)
+                                               (:four . 15)
+                                               (:rotate . 8)
+                                               (:joystick . 26 )
+                                               (:t . 2)
+                                               (:f . 5)
+                                               (:r . 4))
+                                             bname)))
+           (and bnum
+                (= button
+                   bnum)
+                (= press 1))))))
 
 (defgeneric button-release-p (event num)
   (:documentation "Return t if an event is a button press for button num."))
